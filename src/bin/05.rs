@@ -55,7 +55,64 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let submarine_lines = input.lines().map(|line| {
+        let mut split_line = line.split_whitespace();
+        let mut first_pair = split_line.next().unwrap().split(',');
+        let pair1 = (
+            first_pair.next().unwrap().parse::<u64>().unwrap(),
+            first_pair.next().unwrap().parse::<u64>().unwrap(),
+        );
+        let _ = split_line.next();
+        let mut second_pair = split_line.next().unwrap().split(',');
+        let pair2 = (
+            second_pair.next().unwrap().parse::<u64>().unwrap(),
+            second_pair.next().unwrap().parse::<u64>().unwrap(),
+        );
+        (pair1, pair2)
+    });
+
+    let mut grid = HashMap::new();
+
+    for line in submarine_lines {
+        // println!("{},{} -> {},{}", line.0 .0, line.0 .1, line.1 .0, line.1 .1);
+        let x = line.0 .0 as i64;
+        let y = line.0 .1 as i64;
+
+        let x_diff = line.1 .0 as i64 - line.0 .0 as i64;
+        let y_diff = line.1 .1 as i64 - line.0 .1 as i64;
+
+        let x_sign = x_diff.signum();
+        let y_sign = y_diff.signum();
+
+        let x_range = 0..=x_diff.abs();
+        let y_range = 0..=y_diff.abs();
+
+        let full_range = x_range.clone().zip(y_range.clone());
+
+        if x_diff != 0 && y_diff != 0 {
+            full_range.for_each(|offset| {
+                grid.entry((x + offset.0 * x_sign, y + offset.1 * y_sign))
+                    .and_modify(|n| *n += 1)
+                    .or_insert(1);
+            })
+        } else if y_diff != 0 {
+            y_range.for_each(|offset| {
+                grid.entry((x, y + offset * y_sign))
+                    .and_modify(|n| *n += 1)
+                    .or_insert(1);
+            });
+        } else {
+            x_range.for_each(|offset| {
+                grid.entry((x + offset * x_sign, y))
+                    .and_modify(|n| *n += 1)
+                    .or_insert(1);
+            });
+        }
+    }
+    // grid.iter()
+    //     .for_each(|e| println!("({},{}): {}", e.0 .0, e.0 .1, e.1));
+
+    Some(grid.iter().filter(|(_, val)| *val >= &2).count() as u64)
 }
 
 #[cfg(test)]
@@ -71,6 +128,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(12));
     }
 }
