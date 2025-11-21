@@ -20,7 +20,28 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let crabs = input
+        .strip_suffix('\n')
+        .unwrap()
+        .split(',')
+        .map(|substr| substr.parse::<u32>().unwrap())
+        .collect_vec();
+    let &max_distance = crabs.iter().max().unwrap();
+
+    let best = (0..=max_distance)
+        .map(|pos| {
+            crabs
+                .iter()
+                .map(|&crab| {
+                    let dist = pos.abs_diff(crab);
+                    ((dist) * (dist + 1)) / 2
+                })
+                .sum::<u32>()
+        })
+        .min()
+        .unwrap() as u64;
+
+    Some(best)
 }
 
 #[cfg(test)]
@@ -36,6 +57,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(168));
     }
 }
