@@ -1,3 +1,5 @@
+use std::u64::MAX;
+
 use itertools::Itertools;
 
 advent_of_code::solution!(6);
@@ -30,29 +32,29 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    let mut fishes = input
+    let mut mature = [0u64; 7];
+    let mut babies = [0u64; 2];
+    input
         .strip_suffix("\n")
         .unwrap()
         .split(',')
         .map(|substr| substr.parse::<u8>().unwrap())
-        .collect_vec();
+        .for_each(|initial_time| mature[initial_time as usize] += 1);
 
+    let mut mature_idx = 0usize;
+    let mut baby_idx = 0;
     (0..256).for_each(|_| {
-        let mut fishes_to_add = 0;
-        for fish in &mut fishes {
-            if let Some(res) = fish.checked_sub(1) {
-                *fish = res;
-            } else {
-                *fish = 6;
-                fishes_to_add += 1;
-            }
-        }
-        (0..fishes_to_add).for_each(|_| {
-            fishes.push(8u8);
-        })
+        let to_birth = mature[mature_idx];
+        // println!("at time {t}, {to_birth} births");
+        let new_baby_idx = baby_idx ^ 1;
+        mature[mature_idx] += babies[baby_idx];
+        babies[baby_idx] = to_birth;
+        baby_idx = new_baby_idx;
+
+        mature_idx = (mature_idx + 1) % 7;
     });
 
-    Some(fishes.len() as u64)
+    Some(mature.iter().sum::<u64>() + babies.iter().sum::<u64>())
 }
 
 #[cfg(test)]
