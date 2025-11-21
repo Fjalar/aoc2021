@@ -66,8 +66,8 @@ pub fn part_two(input: &str) -> Option<u64> {
         idx += 1;
     }
 
-    println!("{:?}", &oxygen[0]);
-    println!("{:?}", &oxygen[0]);
+    // println!("{:?}", &oxygen[0]);
+    // println!("{:?}", &oxygen[0]);
 
     let oxygen_rating = oxygen[0].iter().fold(0u64, |acc, x| (acc << 1) + x);
     let co2_rating = co2[0].iter().fold(0u64, |acc, x| (acc << 1) + x);
