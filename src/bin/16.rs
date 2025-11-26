@@ -51,9 +51,10 @@ pub fn part_two(input: &str) -> Option<u64> {
 }
 
 fn bits_to_value(bits: &[u8]) -> u64 {
-    bits.iter().rev().enumerate().fold(0, |acc, (idx, x)| {
-        acc + (*x as u64 * 2u64.pow(idx as u32)) as u64
-    })
+    bits.iter()
+        .rev()
+        .enumerate()
+        .fold(0, |acc, (idx, x)| acc + (*x as u64 * 2u64.pow(idx as u32)))
 }
 
 fn parse_packet(bits: &[u8], pointer: &mut usize) -> u64 {
@@ -225,12 +226,12 @@ mod tests {
     #[test]
     fn test_part_one() {
         let result = part_one(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, Some(31));
+        assert_eq!(result, Some(20));
     }
 
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(1));
     }
 }
