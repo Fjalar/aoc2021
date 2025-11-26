@@ -119,7 +119,10 @@ pub fn part_two(input: &str) -> Option<u64> {
         unvisited.sort_by_key(|&(x, y)| u32::MAX - shortest[x][y]);
         let current_shortest = unvisited.pop().unwrap();
 
-        println!("Visiting {current_shortest:?}");
+        // println!("Visiting {current_shortest:?}");
+        // if unvisited.len() % 1000 == 0 {
+        //     println!("{}", unvisited.len());
+        // }
 
         let distance_here = shortest[current_shortest.0][current_shortest.1];
 
