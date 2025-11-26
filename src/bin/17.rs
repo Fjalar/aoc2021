@@ -33,7 +33,32 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let (left, right) = input
+        .trim()
+        .strip_prefix("target area: x=")
+        .unwrap()
+        .split_once(", y=")
+        .unwrap();
+
+    let (x_low, x_high) = left.split_once("..").unwrap();
+    let (y_low, y_high) = right.split_once("..").unwrap();
+
+    let bounds = Bounds {
+        x_low: x_low.parse::<isize>().unwrap(),
+        x_high: x_high.parse::<isize>().unwrap(),
+        y_low: y_low.parse::<isize>().unwrap(),
+        y_high: y_high.parse::<isize>().unwrap(),
+    };
+
+    // Somewhat arbitrary bounds
+    let count = (0..=bounds.x_high)
+        .cartesian_product(bounds.y_low..1000)
+        .filter_map(|(x, y)| test_trajectory((x, y), &bounds))
+        .count();
+
+    // println!("{max_y}");
+
+    Some(count as u64)
 }
 
 struct Bounds {
@@ -82,6 +107,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(112));
     }
 }
