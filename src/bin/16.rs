@@ -134,9 +134,7 @@ fn parse_count(bits: &[u8], pointer: &mut usize) -> u64 {
 
     *pointer += 11;
 
-    (0..count)
-        .map(|_| parse_packet(&bits, pointer))
-        .sum::<u64>()
+    (0..count).map(|_| parse_packet(bits, pointer)).sum::<u64>()
 }
 
 fn parse_length(bits: &[u8], pointer: &mut usize) -> u64 {
@@ -196,7 +194,7 @@ fn parse_count_part_2(bits: &[u8], pointer: &mut usize, id: u8) -> u64 {
 
     *pointer += 11;
 
-    let sub_packets = (0..count).map(|_| parse_packet_part_2(&bits, pointer));
+    let sub_packets = (0..count).map(|_| parse_packet_part_2(bits, pointer));
     // .inspect(|inner| println!("{inner}"));
 
     operate(sub_packets, id)
