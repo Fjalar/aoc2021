@@ -1,7 +1,5 @@
 use std::{fmt, ops::Div};
 
-use itertools::Itertools;
-
 advent_of_code::solution!(18);
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -19,7 +17,7 @@ pub fn part_one(input: &str) -> Option<u64> {
 
     println!("{result}");
 
-    None
+    Some(result.magnitude())
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
@@ -170,6 +168,16 @@ impl Brackets {
         }
 
         has_split
+    }
+
+    fn magnitude(&self) -> u64 {
+        3 * match &self.left {
+            Elem::N(brackets) => brackets.magnitude(),
+            Elem::L(l) => *l as u64,
+        } + 2 * match &self.right {
+            Elem::N(brackets) => brackets.magnitude(),
+            Elem::L(l) => *l as u64,
+        }
     }
 }
 
