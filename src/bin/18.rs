@@ -1,43 +1,51 @@
 use std::{fmt, ops::Div};
 
+use itertools::Itertools;
+
 advent_of_code::solution!(18);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    use Elem::L;
-    use Elem::N;
-    let n1 = Brackets {
-        left: N(Box::new(Brackets {
-            left: N(Box::new(Brackets {
-                left: N(Box::new(Brackets {
-                    left: L(4),
-                    right: L(3),
-                })),
-                right: L(4),
-            })),
-            right: L(4),
-        })),
-        right: N(Box::new(Brackets {
-            left: L(7),
-            right: N(Box::new(Brackets {
-                left: N(Box::new(Brackets {
-                    left: L(8),
-                    right: L(4),
-                })),
-                right: L(9),
-            })),
-        })),
-    };
+    // use Elem::L;
+    // use Elem::N;
+    // let n1 = Brackets {
+    //     left: N(Box::new(Brackets {
+    //         left: N(Box::new(Brackets {
+    //             left: N(Box::new(Brackets {
+    //                 left: L(4),
+    //                 right: L(3),
+    //             })),
+    //             right: L(4),
+    //         })),
+    //         right: L(4),
+    //     })),
+    //     right: N(Box::new(Brackets {
+    //         left: L(7),
+    //         right: N(Box::new(Brackets {
+    //             left: N(Box::new(Brackets {
+    //                 left: L(8),
+    //                 right: L(4),
+    //             })),
+    //             right: L(9),
+    //         })),
+    //     })),
+    // };
 
-    let n2 = Brackets {
-        left: L(1),
-        right: L(1),
-    };
+    // let n2 = Brackets {
+    //     left: L(1),
+    //     right: L(1),
+    // };
 
-    let mut n3 = n1 + n2;
+    // let mut n3 = n1 + n2;
 
-    println!("{}", n3);
-    n3.reduce();
-    println!("{}", n3);
+    // println!("{}", n3);
+    // n3.reduce();
+    // println!("{}", n3);
+
+    let vec = input.lines().map(Brackets::from).collect_vec();
+
+    for e in vec {
+        println!("{e}");
+    }
 
     None
 }
@@ -211,6 +219,48 @@ impl Brackets {
         }
 
         has_split
+    }
+}
+
+impl From<&str> for Brackets {
+    fn from(value: &str) -> Self {
+        let without_brackets = value.strip_prefix("[").unwrap().strip_suffix("]").unwrap();
+
+        let chars = without_brackets.as_bytes();
+
+        let mut bracket_count = 0;
+        let mut pos = 0;
+        (0..without_brackets.len()).for_each(|i| {
+            let current = chars[i] as char;
+            if current == '[' {
+                bracket_count += 1;
+            } else if current == ']' {
+                bracket_count -= 1;
+            } else if current == ',' && bracket_count == 0 {
+                pos = i;
+            }
+        });
+
+        let (left_str, mut right_str) = without_brackets.split_at(pos);
+
+        if right_str.len() > 1 {
+            right_str = &right_str[1..];
+        }
+
+        // println!("Split into {left_str}|{right_str}");
+
+        let left = if left_str.len() == 1 {
+            Elem::L(left_str.parse::<u8>().unwrap())
+        } else {
+            Elem::N(Box::new(Self::from(left_str)))
+        };
+        let right = if right_str.len() == 1 {
+            Elem::L(right_str.parse::<u8>().unwrap())
+        } else {
+            Elem::N(Box::new(Self::from(right_str)))
+        };
+
+        Brackets { left, right }
     }
 }
 
