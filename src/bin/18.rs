@@ -5,47 +5,19 @@ use itertools::Itertools;
 advent_of_code::solution!(18);
 
 pub fn part_one(input: &str) -> Option<u64> {
-    // use Elem::L;
-    // use Elem::N;
-    // let n1 = Brackets {
-    //     left: N(Box::new(Brackets {
-    //         left: N(Box::new(Brackets {
-    //             left: N(Box::new(Brackets {
-    //                 left: L(4),
-    //                 right: L(3),
-    //             })),
-    //             right: L(4),
-    //         })),
-    //         right: L(4),
-    //     })),
-    //     right: N(Box::new(Brackets {
-    //         left: L(7),
-    //         right: N(Box::new(Brackets {
-    //             left: N(Box::new(Brackets {
-    //                 left: L(8),
-    //                 right: L(4),
-    //             })),
-    //             right: L(9),
-    //         })),
-    //     })),
-    // };
+    let result = input
+        .lines()
+        .map(Brackets::from)
+        .reduce(|acc, e| {
+            let mut new_snail = acc + e;
+            // println!("Before reduction\n{new_snail}");
+            new_snail.snail_reduce();
+            // println!("Intermediate result {new_snail}");
+            new_snail
+        })
+        .unwrap();
 
-    // let n2 = Brackets {
-    //     left: L(1),
-    //     right: L(1),
-    // };
-
-    // let mut n3 = n1 + n2;
-
-    // println!("{}", n3);
-    // n3.reduce();
-    // println!("{}", n3);
-
-    let vec = input.lines().map(Brackets::from).collect_vec();
-
-    for e in vec {
-        println!("{e}");
-    }
+    println!("{result}");
 
     None
 }
@@ -83,19 +55,18 @@ impl std::ops::Add for Brackets {
 }
 
 impl Brackets {
-    fn reduce(&mut self) {
+    fn snail_reduce(&mut self) {
         loop {
             // Explode
-            let exploded = self.explode(0).is_some();
-            println!("Explode? {}\n{}", exploded, self);
+            if self.explode(0).is_some() {
+                continue;
+            }
 
             // Split
-            let split = self.split();
-            println!("Split? {}\n{}", split, self);
-
-            if !exploded && !split {
-                break;
+            if self.split() {
+                continue;
             }
+            break;
         }
     }
 
@@ -105,61 +76,41 @@ impl Brackets {
 
         if depth >= 4 {
             if let (Elem::L(a), Elem::L(b)) = (&self.left, &self.right) {
+                // println!("Exploding [{},{}]", *a, *b);
                 return Some((*a, *b));
             } else {
-                panic!()
+                panic!("Number at depth 4 was not just literals: {self}")
             }
         }
 
-        let mut has_exploded = None;
-
-        match &mut self.left {
-            Elem::N(brackets) => {
-                if let Some(explosion) = brackets.explode(depth + 1) {
-                    has_exploded = Some(explosion);
-                    match &mut self.right {
-                        Elem::N(bracket) => bracket.add_to_leftmost(explosion.1),
-                        Elem::L(l) => {
-                            *l += explosion.1;
-                            if depth == 3 {
-                                // The element that just exploded is set to zero
-                                self.left = Elem::L(0);
-                            }
-                            return Some((explosion.0, 0));
-                        }
-                    }
+        if let Elem::N(brackets) = &mut self.left {
+            if let Some(explosion) = brackets.explode(depth + 1) {
+                if depth == 3 {
+                    self.left = Elem::L(0);
                 }
+                match &mut self.right {
+                    Elem::N(brackets) => brackets.add_to_leftmost(explosion.1),
+                    Elem::L(l) => *l += explosion.1,
+                }
+                return Some((explosion.0, 0));
             }
-            Elem::L(_) => (),
         }
 
-        // Only check right value if the left or a child of left has not already exploded
-        if let Some(left_explosion) = has_exploded {
-            Some(left_explosion)
+        if let Elem::N(brackets) = &mut self.right {
+            if let Some(explosion) = brackets.explode(depth + 1) {
+                if depth == 3 {
+                    self.right = Elem::L(0);
+                }
+                match &mut self.left {
+                    Elem::N(brackets) => brackets.add_to_rightmost(explosion.0),
+                    Elem::L(l) => *l += explosion.0,
+                }
+                Some((0, explosion.1))
+            } else {
+                None
+            }
         } else {
-            match &mut self.right {
-                Elem::N(brackets) => {
-                    if let Some(explosion) = brackets.explode(depth + 1) {
-                        match &mut self.left {
-                            Elem::N(bracket) => {
-                                bracket.add_to_rightmost(explosion.0);
-                                Some((0, explosion.1))
-                            }
-                            Elem::L(l) => {
-                                *l += explosion.0;
-                                if depth == 3 {
-                                    // The element that just exploded is set to zero
-                                    self.right = Elem::L(0);
-                                }
-                                Some((0, explosion.1))
-                            }
-                        }
-                    } else {
-                        None
-                    }
-                }
-                Elem::L(_) => None,
-            }
+            None
         }
     }
 
@@ -174,7 +125,7 @@ impl Brackets {
 
     fn add_to_rightmost(&mut self, val: u8) {
         match &mut self.right {
-            Elem::N(brackets) => brackets.add_to_leftmost(val),
+            Elem::N(brackets) => brackets.add_to_rightmost(val),
             Elem::L(l) => {
                 *l += val;
             }
