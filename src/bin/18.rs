@@ -1,5 +1,7 @@
 use std::{fmt, ops::Div};
 
+use itertools::Itertools;
+
 advent_of_code::solution!(18);
 
 pub fn part_one(input: &str) -> Option<u64> {
@@ -21,7 +23,23 @@ pub fn part_one(input: &str) -> Option<u64> {
 }
 
 pub fn part_two(input: &str) -> Option<u64> {
-    None
+    let result = input
+        .lines()
+        .map(Brackets::from)
+        .combinations(2)
+        .map(|v| {
+            let mut sum_a = v[0].clone() + v[1].clone();
+            let mut sum_b = v[1].clone() + v[0].clone();
+            sum_a.snail_reduce();
+            sum_b.snail_reduce();
+            sum_a.magnitude().max(sum_b.magnitude())
+        })
+        .max()
+        .unwrap();
+
+    // println!("{result}");
+
+    Some(result)
 }
 
 #[derive(Clone)]
@@ -245,6 +263,6 @@ mod tests {
     #[test]
     fn test_part_two() {
         let result = part_two(&advent_of_code::template::read_file("examples", DAY));
-        assert_eq!(result, None);
+        assert_eq!(result, Some(3993));
     }
 }
